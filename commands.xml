@@ -5,7 +5,6 @@
     <reward_name>Bruh</reward_name>
     <reward_action_chat_message>redeem bruh</reward_action_chat_message>
     <reward_folder>Sound Alert</reward_folder>
-    <reward_points>10</reward_points>
     <reward_color>
       <background>#ff0000</background>
     </reward_color>
@@ -15,7 +14,7 @@
     <reward_name>Eren Jumpscare</reward_name>
     <reward_action_chat_message>redeem eren</reward_action_chat_message>
     <reward_folder>Special Alert</reward_folder>
-    <reward_points>50</reward_points>
+    <reward_points>0</reward_points>
     <reward_color>
       <background>#00ff00</background>
     </reward_color>
