@@ -24,7 +24,8 @@
     <reward_id>3</reward_id>
     <reward_name>Points</reward_name>
     <reward_action_chat_message>points</reward_action_chat_message>
-     <reward_color>
+    <reward_folder></reward_folder>
+    <reward_color>
       <background>#0000ff</background>
     </reward_color>
   </reward>
