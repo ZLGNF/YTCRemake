@@ -21,12 +21,12 @@
   </reward>
   <reward>
     <reward_id>3</reward_id>
-    <reward_name>Funny Scream</reward_name>
-    <reward_action_chat_message>redeem funnyscream</reward_action_chat_message>
+    <reward_name>AMOGUS</reward_name>
+    <reward_action_chat_message>redeem AMOGUS</reward_action_chat_message>
     <reward_folder>Sound Alert</reward_folder>
     <reward_points>10</reward_points>
     <reward_color>
-      <background>#ff0000</background>
+      <background>#f2e01b</background>
     </reward_color>
   </reward>
   <reward>
@@ -61,12 +61,12 @@
   </reward>
   <reward>
     <reward_id>7</reward_id>
-    <reward_name>Profound Sadness</reward_name>
-    <reward_action_chat_message>redeem sadness</reward_action_chat_message>
+    <reward_name>eLen</reward_name>
+    <reward_action_chat_message>redeem elen</reward_action_chat_message>
     <reward_folder>Sound Alert</reward_folder>
     <reward_points>10</reward_points>
     <reward_color>
-      <background>#03a5fc</background>
+      <background>#5086b3</background>
     </reward_color>
   </reward>
   <reward>
@@ -91,12 +91,12 @@
   </reward>
   <reward>
     <reward_id>10</reward_id>
-    <reward_name>AMOGUS</reward_name>
-    <reward_action_chat_message>redeem AMOGUS</reward_action_chat_message>
+    <reward_name>Funny Scream</reward_name>
+    <reward_action_chat_message>redeem funnyscream</reward_action_chat_message>
     <reward_folder>Sound Alert</reward_folder>
     <reward_points>10</reward_points>
     <reward_color>
-      <background>#f2e01b</background>
+      <background>#ff0000</background>
     </reward_color>
   </reward>
   <reward>
@@ -121,12 +121,12 @@
   </reward>
   <reward>
     <reward_id>13</reward_id>
-    <reward_name>eLen</reward_name>
-    <reward_action_chat_message>redeem elen</reward_action_chat_message>
+    <reward_name>Profound Sadness</reward_name>
+    <reward_action_chat_message>redeem sadness</reward_action_chat_message>
     <reward_folder>Sound Alert</reward_folder>
     <reward_points>10</reward_points>
     <reward_color>
-      <background>#5086b3</background>
+      <background>#03a5fc</background>
     </reward_color>
   </reward>
   <reward>
