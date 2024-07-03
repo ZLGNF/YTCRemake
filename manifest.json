@@ -1,42 +1,49 @@
 {
-   "author": "Gezel.io",
-   "background": {
-      "service_worker": "background.js"
-   },
-   "description": "Unleash channel points and channel rewards on your YouTube™ streams, just like how you do on Twitch with our powerful extension!",
-   "externally_connectable": {
+  "author": "ZLGNF",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "description": "Unleash channel points and channel rewards on your YouTube™ and Twitch streams, just like how you do on Twitch with our powerful extension!",
+  "externally_connectable": {
+    "matches": [
+      "https://*.youtube.com/*",
+      "https://studio.youtube.com/*",
+      "https://*.twitch.tv/*"
+    ]
+  },
+  "icons": {
+    "56": "icons/ytcr.png"
+  },
+  "manifest_version": 3,
+  "name": "YTCR Revival™",
+  "permissions": [
+    "activeTab",
+    "webNavigation",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.youtube.com/*",
+    "https://studio.youtube.com/*",
+    "https://*.twitch.tv/*"
+  ],
+  "version": "2.0.4",
+  "version_name": "2.0.4",
+  "web_accessible_resources": [
+    {
       "matches": [
-         "https://*.youtube.com/*",
-         "https://studio.youtube.com/*"
+        "https://www.youtube.com/*",
+        "https://studio.youtube.com/*",
+        "https://www.twitch.tv/*"
+      ],
+      "resources": [
+        "commands/*.xml",
+        "main.js",
+        "reward.css",
+        "tailwind.css",
+        "icons/*",
+        "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       ]
-   },
-   "icons": {
-      "56": "icons/ytcr.png"
-   },
-   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmlZwJyaNJvV2Z56RTeKCL2Oz8/rYtxaggxM3KIkerrD1z3wRNvQgAYteDTX03j7Id34jeK2b7uZh8oy9BLyC2Z8r7JViO0BSta+WCCVmQfxTot7GepI+SO17AD6HDifRPt3veuG+g88iDyhOGHeYxrQqIQLrJdpgm5l5lVc2G98IQNYZTIvOrT1BKhWS6s3mzE6L3fZkHqO9PKcdQ4waQI+DV3lMI3Elqc3MflsUvnEdnilzpijUE9klUvdJ1FKi782bBGsNoqVScgxpA095/l8Yq43PY1XzZ3nmdBR/B6jjSF64LPRkKu0FIN4WTP49PVZgXPyp+xLUpsOAcMe5+wIDAQAB",
-   "manifest_version": 3,
-   "name": "YTCR TEST™",
-   "permissions": [
-      "activeTab", // Add this permission
-      "webNavigation",
-      "scripting"
-   ],
-   "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "2.0.4",
-   "version_name": "2.0.4",
-   "web_accessible_resources": [
-      {
-         "matches": [
-            "https://www.youtube.com/*",
-            "https://studio.youtube.com/*"
-         ],
-         "resources": [
-            "main.js",
-            "reward.css",
-            "tailwind.css",
-            "icons/*",
-            "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-         ]
-      }
-   ]
+    }
+  ]
 }
