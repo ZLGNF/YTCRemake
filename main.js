@@ -3,6 +3,7 @@
 
     let rewardsData = [];
     let folders = {};
+    let hasFetchedData = false;
 
     function createElement(htmlString) {
         const div = document.createElement('div');
@@ -175,39 +176,42 @@
 }
 
     function initializePlatform(platform) {
-        displayNoCommandsMessage();
-        platform.channelNameFinder(channelName => {
+    displayNoCommandsMessage();
+    platform.channelNameFinder(channelName => {
+        if (!hasFetchedData) {
             window.postMessage({ source: "main.js", message: "initiateFetching" }, "*");
+            hasFetchedData = true;
+        }
 
-            window.addEventListener("message", (event) => {
-                if (event.source !== window) return;
+        window.addEventListener("message", (event) => {
+            if (event.source !== window) return;
 
-                if (event.data && event.data.source === "contentScript.js" && event.data.message === "rewardsData") {
-                    const { data } = event.data;
-                    if (data) {
-                        rewardsData = data.rewardsData;
-                        folders = data.folders;
+            if (event.data && event.data.source === "contentScript.js" && event.data.message === "rewardsData") {
+                const { data } = event.data;
+                if (data) {
+                    rewardsData = data.rewardsData;
+                    folders = data.folders;
 
-                        const chatRenderer = document.querySelector(platform.chatRendererSelector);
-                        if (chatRenderer) {
-                            document.getElementById("YTCRMain").remove();
-                            chatRenderer.appendChild(createElement(platform.mainTemplate));
-                            document.getElementById("PointsButton").addEventListener("click", () => {
-                                const rewardsContainer = document.getElementById("YTCRDropdown");
-                                rewardsContainer.classList.toggle("hidden");
-                                if (!rewardsContainer.classList.contains("hidden")) {
-                                    renderRewards();
-                                }
-                            });
-                            document.getElementById("ClipButton").addEventListener("click", () => appendToChat('!clip'));
-                        }
-                    } else {
-                        console.log("No rewards data available.");
+                    const chatRenderer = document.querySelector(platform.chatRendererSelector);
+                    if (chatRenderer) {
+                        document.getElementById("YTCRMain").remove();
+                        chatRenderer.appendChild(createElement(platform.mainTemplate));
+                        document.getElementById("PointsButton").addEventListener("click", () => {
+                            const rewardsContainer = document.getElementById("YTCRDropdown");
+                            rewardsContainer.classList.toggle("hidden");
+                            if (!rewardsContainer.classList.contains("hidden")) {
+                                renderRewards();
+                            }
+                        });
+                        document.getElementById("ClipButton").addEventListener("click", () => appendToChat('!clip'));
                     }
+                } else {
+                    console.log("No rewards data available.");
                 }
-            });
+            }
         });
-    }
+    });
+}
 
     const platforms = {
         youtube: {
