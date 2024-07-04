@@ -108,8 +108,8 @@
         if (chatRenderer) {
             chatRenderer.appendChild(createElement(`
                 <div id="YTCRMain" class="text-center break-words p-2">
-                    <div class="flex justify-between p-2col-span-full font-bold">
-                        <span class="text-red-600">You don't have this channel's commands. If you want to inform them about the extension, send them over to <a href="https://github.com/gezelio/ytcr" class="underline">our GitHub</a></span>
+                    <div class="flex justify-between p-2 col-span-full font-bold">
+                        <span class="text-red-600">You don't have this channel's commands. If you want to inform them about the extension, send them over to the <a href="https://github.com/ZLGNF/YTCRemake" class="underline">GitHub</a></span>
                     </div>
                 </div>
             `));
@@ -122,7 +122,7 @@
 
         if (match && match[1]) {
             const channelName = match[1];
-            localStorage.setItem("ytcr_channel_id", channelName);
+            localStorage.setItem(localStorageKey, channelName);
             console.log("Channel Name:", channelName);
             callback(channelName);
         } else {
@@ -132,41 +132,47 @@
     }
 
     function findYouTubeChannelId(callback) {
-        const data = parent.ytInitialData || parent.ytcfg?.data_;
-        let channelId;
+    const data = parent.ytInitialData || parent.ytcfg?.data_;
+    let channelId;
 
-        try {
-            if (data) {
-                if (data.contents?.twoColumnWatchNextResults?.results?.results?.contents[1]?.videoSecondaryInfoRenderer?.owner?.videoOwnerRenderer?.title?.runs[0]?.navigationEndpoint?.browseEndpoint?.browseId) {
-                    channelId = data.contents.twoColumnWatchNextResults.results.results.contents[1]
-                        .videoSecondaryInfoRenderer.owner.videoOwnerRenderer.title.runs[0]
-                        .navigationEndpoint.browseEndpoint.browseId;
-                } else if (data.CHANNEL_ID) {
-                    channelId = data.CHANNEL_ID;
+    try {
+        if (data) {
+            if (data.contents?.twoColumnWatchNextResults?.results?.results?.contents[1]?.videoSecondaryInfoRenderer?.owner?.videoOwnerRenderer?.title?.runs[0]?.navigationEndpoint?.browseEndpoint?.browseId) {
+                channelId = data.contents.twoColumnWatchNextResults.results.results.contents[1]
+                    .videoSecondaryInfoRenderer.owner.videoOwnerRenderer.title.runs[0]
+                    .navigationEndpoint.browseEndpoint.browseId;
+                
+                if (channelId === localStorage.getItem("ytcr_channel_id")) {
+                    localStorage.removeItem("ytcr_channel_id");
+                    window.top.location.reload();
+                    return; // Stop further execution
                 }
-
-                if (channelId) {
-                    console.log("YouTube Channel ID:", channelId);
-                    localStorage.setItem("ytcr_channel_id", channelId);
-                    callback(channelId);
-                    return;
-                }
+            } else if (data.CHANNEL_ID) {
+                channelId = data.CHANNEL_ID;
             }
 
-            console.log("Channel ID not found. Trying to get from localStorage...");
-            channelId = localStorage.getItem("ytcr_channel_id");
             if (channelId) {
-                console.log("Channel ID found in localStorage:", channelId);
+                console.log("YouTube Channel ID:", channelId);
+                localStorage.setItem("ytcr_channel_id", channelId);
                 callback(channelId);
                 return;
             }
-
-            console.log("Channel ID not found in localStorage. Waiting...");
-            setTimeout(() => findYouTubeChannelId(callback), 1000);
-        } catch (error) {
-            console.error("Error occurred while trying to find Channel ID:", error);
         }
+
+        console.log("ytInitialData or ytcfg data not found or Channel ID not found. Trying to get channelId from localStorage...");
+        channelId = localStorage.getItem("ytcr_channel_id");
+        if (channelId) {
+            console.log("Channel ID found in localStorage:", channelId);
+            callback(channelId);
+            return;
+        }
+
+        console.log("Channel ID not found in localStorage. Waiting...");
+        setTimeout(() => findYouTubeChannelId(callback), 1000);
+    } catch (error) {
+        console.error("Error occurred while trying to find Channel ID:", error);
     }
+}
 
     function initializePlatform(platform) {
         displayNoCommandsMessage();
