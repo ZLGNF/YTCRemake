@@ -104,7 +104,7 @@
                 console.log(`Fetching ${channelInfo}'s commands`);
 
                 if (channelInfo === "UCnzGxHoqeD69OQjnf0oUhtw" || channelInfo === "zlgnf") {
-                    const commandsXMLURL = "https://raw.githubusercontent.com/ZLGNF/YTCRemake/main/commands.xml";
+                    const commandsXMLURL = "https://raw.githubusercontent.com/ZLGNF/YTCRemake/main/commands/commands.xml";
                     fetchRewardsData(commandsXMLURL, (data) => {
                         window.postMessage({ source: "contentScript.js", message: "rewardsData", data }, "*");
                     });
