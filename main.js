@@ -3,7 +3,6 @@
 
     let rewardsData = [];
     let folders = {};
-    let hasFetchedData = false;
 
     function createElement(htmlString) {
         const div = document.createElement('div');
@@ -36,7 +35,9 @@
     }
 
     function copyToClipboard(text) {
-        const tempInput = createElement('<textarea style="position: fixed; opacity: 0;"></textarea>');
+        const tempInput = document.createElement('textarea');
+        tempInput.style.position = 'fixed';
+        tempInput.style.opacity = '0';
         tempInput.value = text;
         document.body.appendChild(tempInput);
         tempInput.select();
@@ -47,7 +48,7 @@
 
     function appendToChat(message) {
         if (window.location.hostname.includes('youtube.com')) {
-            const chatInput = document.querySelector('div#input[contenteditable]') ||
+            let chatInput = document.querySelector('div#input[contenteditable]') ||
                 (document.querySelector("#chatframe")?.contentDocument || document.querySelector("#chatframe")?.contentWindow.document).querySelector('div#input[contenteditable]');
             if (chatInput) {
                 chatInput.innerHTML = '';
@@ -75,7 +76,8 @@
             backButton.addEventListener("click", () => renderRewards());
             rewardsContainer.appendChild(backButton);
 
-            rewardsData.filter(reward => reward.reward_folder === folder).forEach(renderReward);
+            rewardsData.filter(reward => reward.reward_folder === folder)
+                .forEach(renderReward);
         } else {
             Object.entries(folders).forEach(([key, value]) => {
                 const folderButton = createElement(`
@@ -88,7 +90,8 @@
                 rewardsContainer.appendChild(folderButton);
             });
 
-            rewardsData.filter(reward => !reward.reward_folder).forEach(renderReward);
+            rewardsData.filter(reward => !reward.reward_folder)
+                .forEach(renderReward);
         }
     }
 
@@ -107,153 +110,182 @@
     function displayNoCommandsMessage() {
         const chatRenderer = document.querySelector("yt-live-chat-renderer") || document.querySelector("div.Layout-sc-1xcs6mc-0.kILIqT.chat-input");
         if (chatRenderer) {
-            chatRenderer.appendChild(createElement(`
+            const messageDiv = createElement(`
                 <div id="YTCRMain" class="text-center break-words p-2">
-                    <div class="flex justify-between p-2 col-span-full font-bold">
-                        <span class="text-red-600">You don't have this channel's commands. If you want to inform them about the extension, send them over to the <a href="https://github.com/ZLGNF/YTCRemake" class="underline">GitHub</a></span>
+                    <div class="flex justify-between p-2col-span-full font-bold">
+                        <span class="text-red-600">If you are reading this and have this streamer's commands, try reloading this page! If you don't, tell them to go to <a href="https://github.com/ZLGNF/YTCRemake" class="underline">our GitHub</a></span>
                     </div>
                 </div>
-            `));
+            `);
+            chatRenderer.appendChild(messageDiv);
         }
     }
 
-    function findChannelName(callback, regex, localStorageKey) {
+    function findTwitchChannelName(callback) {
         const url = window.location.href;
-        const match = url.match(regex);
+        const twitchUrlRegex = /(?:https?:\/\/)?(?:www\.)?twitch\.tv\/(?:popout\/)?([^\/?]+)/i;
+        const match = url.match(twitchUrlRegex);
 
         if (match && match[1]) {
             const channelName = match[1];
-            localStorage.setItem(localStorageKey, channelName);
-            console.log("Channel Name:", channelName);
+            localStorage.setItem("ytcr_channel_id", channelName);
+            console.log("Twitch Channel Name:", channelName);
             callback(channelName);
         } else {
-            console.log("Channel Name not found in URL. Waiting...");
-            setTimeout(() => findChannelName(callback, regex, localStorageKey), 1000);
+            console.log("Twitch Channel Name not found in URL. Waiting...");
+            setTimeout(() => findTwitchChannelName(callback), 1000);
         }
     }
 
-    function findYouTubeChannelId(callback) {
-    const data = parent.ytInitialData || parent.ytcfg?.data_;
-    let channelId;
+    function findChannelId(callback) {
+        const data = parent.ytInitialData || parent.ytcfg?.data_;
+        let channelId;
 
-    try {
-        if (data) {
-            if (data.contents?.twoColumnWatchNextResults?.results?.results?.contents[1]?.videoSecondaryInfoRenderer?.owner?.videoOwnerRenderer?.title?.runs[0]?.navigationEndpoint?.browseEndpoint?.browseId) {
-                channelId = data.contents.twoColumnWatchNextResults.results.results.contents[1]
-                    .videoSecondaryInfoRenderer.owner.videoOwnerRenderer.title.runs[0]
-                    .navigationEndpoint.browseEndpoint.browseId;
-                
-                if (channelId === localStorage.getItem("ytcr_channel_id")) {
-                    localStorage.removeItem("ytcr_channel_id");
-                    window.top.location.reload();
-                    return; // Stop further execution
+        try {
+            if (data) {
+                if (data.contents?.twoColumnWatchNextResults?.results?.results?.contents[1]?.videoSecondaryInfoRenderer?.owner?.videoOwnerRenderer?.title?.runs[0]?.navigationEndpoint?.browseEndpoint?.browseId) {
+                    channelId = data.contents.twoColumnWatchNextResults.results.results.contents[1]
+                        .videoSecondaryInfoRenderer.owner.videoOwnerRenderer.title.runs[0]
+                        .navigationEndpoint.browseEndpoint.browseId;
+                } else if (data.CHANNEL_ID) {
+                    channelId = data.CHANNEL_ID;
                 }
-            } else if (data.CHANNEL_ID) {
-                channelId = data.CHANNEL_ID;
+
+                if (channelId) {
+                    console.log("YouTube Channel ID:", channelId);
+                    localStorage.setItem("ytcr_channel_id", channelId); // Store channelId in localStorage
+                    callback(channelId);
+                    return; // Exit function if channelId is found
+                }
             }
 
+            console.log("ytInitialData or ytcfg data not found or Channel ID not found. Trying to get channelId from localStorage...");
+            channelId = localStorage.getItem("ytcr_channel_id"); // Try to get channelId from localStorage
             if (channelId) {
-                console.log("YouTube Channel ID:", channelId);
-                localStorage.setItem("ytcr_channel_id", channelId);
+                console.log("Channel ID found in localStorage:", channelId);
                 callback(channelId);
-                return;
+                return; // Exit function if channelId is found in localStorage
             }
-        }
 
-        console.log("ytInitialData or ytcfg data not found or Channel ID not found. Trying to get channelId from localStorage...");
-        channelId = localStorage.getItem("ytcr_channel_id");
-        if (channelId) {
-            console.log("Channel ID found in localStorage:", channelId);
-            callback(channelId);
-            return;
+            console.log("Channel ID not found in localStorage. Waiting...");
+            setTimeout(() => findChannelId(callback), 1000);
+        } catch (error) {
+            console.error("Error occurred while trying to find Channel ID:", error);
         }
-
-        console.log("Channel ID not found in localStorage. Waiting...");
-        setTimeout(() => findYouTubeChannelId(callback), 1000);
-    } catch (error) {
-        console.error("Error occurred while trying to find Channel ID:", error);
     }
-}
 
-    function initializePlatform(platform) {
-    displayNoCommandsMessage();
-    platform.channelNameFinder(channelName => {
-        if (!hasFetchedData) {
+    function initializeYouTube() {
+        displayNoCommandsMessage();
+        findChannelId(channelId => {
+            // Send message to contentScript.js to fetch rewards data
             window.postMessage({ source: "main.js", message: "initiateFetching" }, "*");
-            hasFetchedData = true;
-        }
 
-        window.addEventListener("message", (event) => {
-            if (event.source !== window) return;
-
-            if (event.data && event.data.source === "contentScript.js" && event.data.message === "rewardsData") {
-                const { data } = event.data;
-                if (data) {
-                    rewardsData = data.rewardsData;
-                    folders = data.folders;
-
-                    const chatRenderer = document.querySelector(platform.chatRendererSelector);
-                    if (chatRenderer) {
-                        document.getElementById("YTCRMain").remove();
-                        chatRenderer.appendChild(createElement(platform.mainTemplate));
-                        document.getElementById("PointsButton").addEventListener("click", () => {
-                            const rewardsContainer = document.getElementById("YTCRDropdown");
-                            rewardsContainer.classList.toggle("hidden");
-                            if (!rewardsContainer.classList.contains("hidden")) {
-                                renderRewards();
-                            }
-                        });
-                        document.getElementById("ClipButton").addEventListener("click", () => appendToChat('!clip'));
-                    }
-                } else {
-                    console.log("No rewards data available.");
+            // Listen for rewards data
+            window.addEventListener("message", (event) => {
+                // We only accept messages from the same frame
+                if (event.source !== window) {
+                    return;
                 }
-            }
-        });
-    });
-}
 
-    const platforms = {
-        youtube: {
-            channelNameFinder: findYouTubeChannelId,
-            chatRendererSelector: "yt-live-chat-renderer",
-            mainTemplate: `
-                <div id="YTCRMain" class="text-center break-words p-2">
-                    <div id="buttons" class="flex justify-between p-2 col-span-full font-bold">
-                        <button id="PointsButton" class="bg-primary px-2 rounded-lg hover cursor-pointer">Rewards</button>
-                        <button id="ClipButton" class="bg-primary px-2 rounded-lg text-white hover cursor-pointer disabled:bg-background disabled:pointer-events-none">
-                            <i class="fa-solid fa-clapperboard mr-1"></i>Clip
-                        </button>
-                    </div>
-                    <div id="YTCRDropdown" class="m-2 col-span-full grid grid-cols-4 gap-3 hidden"></div>
-                </div>
-            `
-        },
-        twitch: {
-            channelNameFinder: (callback) => findChannelName(callback, /(?:https?:\/\/)?(?:www\.)?twitch\.tv\/(?:popout\/)?([^\/?]+)/i, "ytcr_channel_id"),
-            chatRendererSelector: ".chat-input",
-            mainTemplate: `
-                <div id="YTCRMain" class="text-center break-words p-2">
-                    <div id="buttons" class="flex justify-between p-2 col-span-full font-bold">
-                        <button id="PointsButton" class="bg-primary px-2 rounded-lg hover cursor-pointer">Rewards</button>
-                        <button id="ClipButton" class="bg-primary px-2 rounded-lg text-white hover cursor-pointer disabled:bg-background disabled:pointer-events-none">
-                            <i class="fa-solid fa-clapperboard mr-1"></i>Clip
-                        </button>
-                    </div>
-                    <div id="YTCRDropdown" class="m-2 col-span-full grid grid-cols-4 gap-3 hidden"></div>
-                </div>
-            `
-        }
-    };
+                if (event.data && event.data.source === "contentScript.js" && event.data.message === "rewardsData") {
+                    const { data } = event.data;
+                    if (data) {
+                        rewardsData = data.rewardsData;
+                        folders = data.folders;
+
+                        const chatRenderer = document.querySelector("yt-live-chat-renderer");
+                        if (chatRenderer) {
+                            document.getElementById("YTCRMain").remove();
+                            chatRenderer.appendChild(createElement(`
+                                <div id="YTCRMain" class="text-center break-words p-2">
+                                    <div id="buttons" class="flex justify-between p-2 col-span-full font-bold">
+                                        <button id="PointsButton" class="bg-primary px-2 rounded-lg hover cursor-pointer">Rewards</button>
+                                        <button id="ClipButton" class="bg-primary px-2 rounded-lg text-white hover cursor-pointer disabled:bg-background disabled:pointer-events-none">
+                                            <i class="fa-solid fa-clapperboard mr-1"></i>Clip
+                                        </button>
+                                    </div>
+                                    <div id="YTCRDropdown" class="m-2 col-span-full grid grid-cols-4 gap-3 hidden"></div>
+                                </div>
+                            `));
+                            document.getElementById("PointsButton").addEventListener("click", () => {
+                                const rewardsContainer = document.getElementById("YTCRDropdown");
+                                if (rewardsContainer.classList.contains("hidden")) {
+                                    renderRewards();
+                                    rewardsContainer.classList.remove("hidden");
+                                } else {
+                                    rewardsContainer.classList.add("hidden");
+                                }
+                            });
+                            document.getElementById("ClipButton").addEventListener("click", () => appendToChat('!clip'));
+                        }
+                    } else {
+                        console.log("No rewards data available.");
+                    }
+                }
+            });
+        });
+    }
+
+    function initializeTwitch() {
+        displayNoCommandsMessage();
+        findTwitchChannelName(channelName => {
+            // Send message to contentScript.js to fetch rewards data
+            window.postMessage({ source: "main.js", message: "initiateFetching" }, "*");
+
+            // Listen for rewards data
+            window.addEventListener("message", (event) => {
+                // We only accept messages from the same frame
+                if (event.source !== window) {
+                    return;
+                }
+
+                if (event.data && event.data.source === "contentScript.js" && event.data.message === "rewardsData") {
+                    const { data } = event.data;
+                    if (data) {
+                        rewardsData = data.rewardsData;
+                        folders = data.folders;
+
+                        const chatRenderer = document.querySelector(".chat-input");
+                        if (chatRenderer) {
+                            document.getElementById("YTCRMain").remove();
+                            chatRenderer.appendChild(createElement(`
+                                <div id="YTCRMain" class="text-center break-words p-2">
+                                    <div id="buttons" class="flex justify-between p-2 col-span-full font-bold">
+                                        <button id="PointsButton" class="bg-primary px-2 rounded-lg hover cursor-pointer">Rewards</button>
+                                        <button id="ClipButton" class="bg-primary px-2 rounded-lg text-white hover cursor-pointer disabled:bg-background disabled:pointer-events-none">
+                                            <i class="fa-solid fa-clapperboard mr-1"></i>Clip
+                                        </button>
+                                    </div>
+                                    <div id="YTCRDropdown" class="m-2 col-span-full grid grid-cols-4 gap-3 hidden"></div>
+                                </div>
+                            `));
+                            document.getElementById("PointsButton").addEventListener("click", () => {
+                                const rewardsContainer = document.getElementById("YTCRDropdown");
+                                if (rewardsContainer.classList.contains("hidden")) {
+                                    renderRewards();
+                                    rewardsContainer.classList.remove("hidden");
+                                } else {
+                                    rewardsContainer.classList.add("hidden");
+                                }
+                            });
+                            document.getElementById("ClipButton").addEventListener("click", () => appendToChat('!clip'));
+                        }
+                    } else {
+                        console.log("No rewards data available.");
+                    }
+                }
+            });
+        });
+    }
 
     function initializeExtension() {
         const isYouTube = window.location.hostname.includes('youtube.com');
         const isTwitch = window.location.hostname.includes('twitch.tv');
 
         if (isYouTube) {
-            initializePlatform(platforms.youtube);
+            initializeYouTube();
         } else if (isTwitch) {
-            initializePlatform(platforms.twitch);
+            initializeTwitch();
         }
     }
 
@@ -265,17 +297,20 @@
         }
     }
 
+    // Try to initialize periodically until it succeeds
     const initializeInterval = setInterval(tryInitialize, 1000);
 
+    // MutationObserver to detect when the extension menu is removed and re-added
     const chatObserver = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
             if (mutation.target.id === 'YTCRMain' && mutation.type === 'childList') {
-                clearInterval(initializeInterval);
-                initializeExtension();
+                clearInterval(initializeInterval); // Clear the initializeInterval
+                initializeExtension(); // Re-initialize the extension
             }
         });
     });
 
+    // Observe changes in the chat area
     const chatObserverTarget = document.querySelector(".chat-input") || document.querySelector("yt-live-chat-renderer");
     chatObserver.observe(chatObserverTarget, { childList: true });
 
